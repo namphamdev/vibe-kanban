@@ -15,6 +15,10 @@ pub fn auth_router() -> Router<AppState> {
         .route("/auth/github/check", get(github_check_token))
 }
 
+pub fn github_client_id() -> String {
+    std::env::var("GITHUB_CLIENT_ID").unwrap_or("Ov23li9bxz3kKfPOIsGm".to_string())
+}
+
 #[derive(serde::Deserialize)]
 struct DeviceStartRequest {}
 
@@ -34,8 +38,9 @@ struct DevicePollRequest {
 
 /// POST /auth/github/device/start
 async fn device_start() -> ResponseJson<ApiResponse<DeviceStartResponse>> {
+    let github_client_id = github_client_id();
     let params = [
-        ("client_id", "Ov23li9bxz3kKfPOIsGm"),
+        ("client_id", github_client_id.as_str()),
         ("scope", "user:email,repo"),
     ];
     let client = reqwest::Client::new();
@@ -103,8 +108,9 @@ async fn device_poll(
     State(app_state): State<AppState>,
     Json(payload): Json<DevicePollRequest>,
 ) -> ResponseJson<ApiResponse<String>> {
+    let github_client_id = github_client_id();
     let params = [
-        ("client_id", "Ov23li9bxz3kKfPOIsGm"),
+        ("client_id", github_client_id.as_str()),
         ("device_code", payload.device_code.as_str()),
         ("grant_type", "urn:ietf:params:oauth:grant-type:device_code"),
     ];
